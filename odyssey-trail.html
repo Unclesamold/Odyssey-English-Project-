@@ -1,0 +1,560 @@
+<title>Odyssey Trail</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Alegreya:wght@400;500;700&family=IBM+Plex+Mono:wght@400;500&family=Marcellus&display=swap">
+<style>
+/* Layout: one narrative column. Story panel first, then ledger, chart and log below. */
+:root{
+  --bg:#e7edef; --surface:#f6f9fa; --surface2:#edf2f4; --ink:#12202c; --muted:#53687a;
+  --accent:#9c5a12; --accent-ink:#ffffff; --sea:#1b5575; --wine:#7d2140; --good:#2d6a4d; --bad:#a63c2b; --line:#c3d0d7;
+  --font-display:'Marcellus','Trajan Pro','Times New Roman',serif;
+  --font-body:'Alegreya',Georgia,serif;
+  --font-mono:'IBM Plex Mono',ui-monospace,Menlo,Consolas,monospace;
+}
+@media (prefers-color-scheme: dark){
+  :root:not([data-theme="light"]){
+    --bg:#0c1722; --surface:#132434; --surface2:#182d41; --ink:#e8eef2; --muted:#93a7b6;
+    --accent:#d9a24b; --accent-ink:#1a1205; --sea:#5aa3c7; --wine:#c4607c; --good:#6fbf97; --bad:#e08672; --line:#28405a;
+    color-scheme:dark;
+  }
+}
+:root[data-theme="dark"]{
+  --bg:#0c1722; --surface:#132434; --surface2:#182d41; --ink:#e8eef2; --muted:#93a7b6;
+  --accent:#d9a24b; --accent-ink:#1a1205; --sea:#5aa3c7; --wine:#c4607c; --good:#6fbf97; --bad:#e08672; --line:#28405a;
+  color-scheme:dark;
+}
+*{box-sizing:border-box}
+body{background:var(--bg);color:var(--ink);font-family:var(--font-body);font-size:18px;line-height:1.5;
+  padding-block:20px 40px;padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px))}
+.wrap{max-width:720px;margin:0 auto;display:flex;flex-direction:column;gap:16px}
+.top{display:flex;justify-content:space-between;align-items:flex-end;gap:12px;flex-wrap:wrap}
+.eyebrow{font:12px var(--font-mono);letter-spacing:.14em;text-transform:uppercase;color:var(--muted);margin:0}
+h1{font:400 30px/1.1 var(--font-display);letter-spacing:.14em;text-transform:uppercase;margin:2px 0 0}
+.clock{font:13px var(--font-mono);color:var(--muted);margin:0}
+.key{height:10px;background:var(--accent);opacity:.8;
+  -webkit-mask:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='14' height='10'%3E%3Cpath d='M0 9H14M2 9V2H12V7H5V4.5' fill='none' stroke='black' stroke-width='1.4'/%3E%3C/svg%3E") repeat-x;
+  mask:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='14' height='10'%3E%3Cpath d='M0 9H14M2 9V2H12V7H5V4.5' fill='none' stroke='black' stroke-width='1.4'/%3E%3C/svg%3E") repeat-x}
+.panel,.card{background:var(--surface);border:1px solid var(--line);border-radius:6px;padding:18px}
+.card{padding:14px}
+.card h3{font:12px var(--font-mono);letter-spacing:.14em;text-transform:uppercase;color:var(--muted);margin:0 0 10px;font-weight:400}
+.status{font:12px var(--font-mono);color:var(--muted);margin:0 0 14px;display:flex;gap:6px 14px;flex-wrap:wrap}
+.kicker{font:12px var(--font-mono);letter-spacing:.1em;text-transform:uppercase;color:var(--accent);margin:0 0 6px}
+.ptitle{font:400 26px/1.2 var(--font-display);margin:0 0 12px;text-wrap:balance}
+.narr{max-width:62ch;margin:0 0 12px}
+.fx{display:flex;flex-wrap:wrap;gap:6px;list-style:none;padding:0;margin:4px 0 14px}
+.fx li{font:12.5px var(--font-mono);padding:2px 8px;border:1px solid currentColor;border-radius:3px}
+.fx .good{color:var(--good)} .fx .bad{color:var(--bad)} .fx .neutral{color:var(--muted)}
+.choices{display:flex;flex-direction:column;gap:8px;margin-top:14px}
+.choices.minors{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));margin-top:8px}
+.choice{display:flex;gap:12px;align-items:baseline;width:100%;text-align:left;font:inherit;color:var(--ink);
+  background:var(--surface2);border:1px solid var(--line);border-radius:4px;padding:12px 14px;min-height:48px;cursor:pointer}
+.choice.minor{font-size:15.5px;padding:9px 12px;min-height:44px}
+.choice:hover{border-color:var(--accent)}
+.choice:focus-visible,.step button:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+.choice[disabled]{opacity:.55;cursor:not-allowed}
+.choice.primary{background:var(--accent);color:var(--accent-ink);border-color:var(--accent);font-weight:700}
+.choice .num{font:12px var(--font-mono);color:var(--accent);flex:none;min-width:1.1em}
+.choice.primary .num{color:var(--accent-ink)}
+.choice small{display:block;font-size:13.5px;font-weight:400;color:var(--muted)}
+.choice.primary small{color:var(--accent-ink);opacity:.85}
+.orow{display:flex;justify-content:space-between;align-items:center;gap:12px;padding:10px 0;border-bottom:1px solid var(--line)}
+.orow span{display:block;font-size:14px;color:var(--muted)}
+.step{display:flex;align-items:center;gap:10px;flex:none}
+.step button{width:40px;height:40px;font:20px var(--font-mono);background:var(--surface2);color:var(--ink);border:1px solid var(--line);border-radius:4px;cursor:pointer}
+.step output{font:500 16px var(--font-mono);min-width:3ch;text-align:center}
+.purse{font:14px var(--font-mono);margin:12px 0 0}
+.cols{display:grid;grid-template-columns:1fr 1fr;gap:6px 18px}
+.col{display:flex;flex-direction:column;gap:8px}
+.n,.mh{display:flex;justify-content:space-between;font-size:15px}
+.n b,.mh b{font:500 14px var(--font-mono)}
+.n.warn b{color:var(--bad)}
+.bar{display:block;height:5px;background:var(--line);border-radius:3px;overflow:hidden;margin-top:3px}
+.bar i{display:block;height:100%;background:var(--good)}
+.bar.sea i{background:var(--sea)} .bar.wine i{background:var(--wine)} .bar.low i{background:var(--bad)}
+.map{width:100%;height:auto;display:block}
+.map .course{fill:none;stroke:var(--muted);stroke-width:1;stroke-dasharray:3 4}
+.map .done{fill:none;stroke:var(--accent);stroke-width:2}
+.map .pt{fill:var(--surface);stroke:var(--muted);stroke-width:1.2}
+.map .pt.seen{fill:var(--accent);stroke:var(--accent)}
+.map .pt.next{stroke:var(--accent);stroke-width:2}
+.map .ship{fill:var(--sea);stroke:var(--surface);stroke-width:1.5}
+.map text{font:9px var(--font-mono);fill:var(--muted)}
+.mapnote{font:13px var(--font-mono);color:var(--muted);margin:6px 0 0}
+#log{margin:0;padding:0;list-style:none;display:flex;flex-direction:column;gap:6px;font-size:15px;color:var(--muted)}
+#log b{font:500 12px var(--font-mono);color:var(--accent);margin-right:6px}
+.foot{font-size:14px;color:var(--muted);margin:0}
+@media (prefers-reduced-motion:no-preference){.bar i{transition:width .3s}}
+</style>
+<div class="wrap">
+  <header class="top">
+    <div><p class="eyebrow">Troy to Ithaca</p><h1>Odyssey Trail</h1></div>
+    <p class="clock" id="clock"></p>
+  </header>
+  <div class="key" aria-hidden="true"></div>
+  <main class="wrap" style="gap:16px;max-width:none">
+    <section class="panel" id="panel" aria-live="polite"></section>
+    <div id="side" class="wrap" style="gap:16px;max-width:none" hidden>
+      <section class="card"><h3>Ship’s ledger</h3><div id="ledger"></div></section>
+      <section class="card"><h3>Course</h3><div id="map"></div><p class="mapnote" id="mapnote"></p></section>
+      <section class="card"><h3>Ship’s log</h3><ol id="log"></ol></section>
+    </div>
+  </main>
+  <p class="foot">Loosely after Homer’s Odyssey. Keys 1 to 9 pick the numbered options.</p>
+</div>
+<script>
+(function(){
+'use strict';
+const $=s=>document.querySelector(s);
+const rand=(a,b)=>Math.floor(Math.random()*(b-a+1))+a;
+const chance=p=>Math.random()<p;
+const pick=a=>a[Math.floor(Math.random()*a.length)];
+const clamp=(v,a,b)=>Math.max(a,Math.min(b,v));
+let S=null,V=null;
+const ui={outfit:{food:300,wine:20,pitch:40}};
+const END=1130;
+const PACE={drift:{n:'Drifting',l:25,fx:{}},steady:{n:'Steady rowing',l:40,fx:{}},hard:{n:'Hard rowing',l:55,fx:{morale:-4,vigor:-2,hull:-2}}};
+const RAT={full:{n:'Full rations',r:0.25},half:{n:'Half rations',r:0.15},bare:{n:'Bare rations',r:0.08}};
+const NP={steady:'hard',hard:'drift',drift:'steady'}, NR={full:'half',half:'bare',bare:'full'};
+const LABEL={crew:'men',hull:'hull',food:'food',wine:'wine',pitch:'pitch',treasure:'talents',morale:'morale',vigor:'vigor',wrath:'wrath',kleos:'kleos'};
+const LM=[
+ {name:'Ismarus',at:70,x:314,y:24,scene:()=>sceneIsmarus()},
+ {name:'the Lotus-Eaters',at:200,x:290,y:62,scene:()=>sceneLotus()},
+ {name:'the Cyclops’ island',at:330,x:263,y:110,scene:()=>sceneCyclops()},
+ {name:'Aeolia',at:440,x:238,y:150,scene:()=>sceneAeolia()},
+ {name:'the Laestrygonians',at:540,x:212,y:118,scene:()=>sceneLaest()},
+ {name:'Circe’s isle',at:640,x:186,y:72,scene:()=>sceneCirce()},
+ {name:'the Underworld',at:720,x:160,y:36,scene:()=>sceneHades(),cond:()=>S.circe},
+ {name:'the Sirens’ isle',at:800,x:134,y:70,scene:()=>sceneSirens()},
+ {name:'the Narrow Strait',at:860,x:108,y:112,scene:()=>sceneStrait()},
+ {name:'Thrinacia',at:920,x:84,y:160,scene:()=>sceneThrin()},
+ {name:'Calypso’s isle',at:980,x:62,y:176,scene:()=>sceneOgygia(),cond:()=>S.alone},
+ {name:'Scheria',at:1060,x:44,y:136,scene:()=>sceneScheria()},
+ {name:'Ithaca',at:END,x:22,y:92,scene:()=>sceneIthaca()}
+];
+const START={name:'Troy',at:0,x:340,y:40};
+const cost=o=>o.food/10+o.wine/2+o.pitch/5;
+const c=(label,run,o)=>Object.assign({label,run},o||{});
+
+function nextIdx(){for(let i=S.nextIdx;i<LM.length;i++){if(!LM[i].cond||LM[i].cond())return i;}return LM.length-1;}
+function fx(d){
+  const out=[];
+  for(const k in d){
+    if(!d[k])continue;
+    const b=S[k];let v=b+d[k];
+    if(['hull','morale','vigor','wrath'].includes(k))v=clamp(v,0,100);else v=Math.max(0,v);
+    S[k]=v;const diff=Math.round(v-b);
+    if(diff!==0)out.push({t:(diff>0?'+':'−')+Math.abs(diff)+' '+LABEL[k],good:k==='wrath'?diff<0:diff>0});
+  }
+  return out;
+}
+function settle(){
+  const n=[];
+  ['food','wine','pitch','treasure','crew','kleos'].forEach(k=>{S[k]=Math.max(0,Math.round(S[k]));});
+  ['hull','morale','vigor','wrath'].forEach(k=>{S[k]=clamp(Math.round(S[k]),0,100);});
+  if(S.crew<=0&&!S.alone){S.crew=0;S.alone=true;S.hull=Math.min(S.hull,40);n.push('Every bench stands empty. You are alone with what is left of the ship.');}
+  if(S.hull<=0){
+    if(S.alone){S.over='raft';}
+    else{S.crew=0;S.alone=true;S.hull=30;S.food=Math.min(S.food,10);S.vigor=Math.max(5,S.vigor-15);S.morale=20;n.push('The ship breaks apart under you. You cling to a spar, the only survivor.');}
+  }
+  if(S.morale<=0&&!S.alone&&S.crew>0){const l=Math.ceil(S.crew*0.4);S.crew-=l;S.treasure=Math.floor(S.treasure/2);S.morale=30;n.push('The men mutiny. '+l+' desert and carry off half your treasure.');}
+  if(S.vigor<=0)S.over='vigor';
+  return n;
+}
+function newGame(o){
+  S={days:0,pos:0,lastAt:0,nextIdx:0,seen:[],turns:0,crew:48,hull:100,food:o.food,wine:o.wine,pitch:o.pitch,
+     treasure:100-cost(o),morale:70,vigor:100,wrath:5,kleos:0,pace:'steady',rations:'full',
+     alone:false,circe:false,warned:false,bag:0,stale:0,over:null,log:[]};
+}
+function addLog(t){const y=Math.floor(S.days/365)+1,d=S.days%365+1;S.log.unshift('<b>Y'+y+' D'+d+'</b>'+t);S.log=S.log.slice(0,9);}
+
+/* ---------- rendering ---------- */
+function show(v){V=v;render();}
+function render(){renderPanel();renderSide();}
+function statusLine(){
+  return '<p class="status"><span>Men '+S.crew+'</span><span>Food '+S.food+'</span><span>Hull '+S.hull+'</span><span>'+Math.max(0,END-Math.round(S.pos))+' leagues to Ithaca</span></p>';
+}
+function btn(ch,i){
+  const sub=ch.disabled&&ch.why?ch.why:(ch.hint||'');
+  return '<button class="choice'+(ch.primary?' primary':'')+(ch.minor?' minor':'')+'" data-i="'+i+'"'+(ch.disabled?' disabled':'')+'><span class="num">'+(i+1)+'</span><span>'+ch.label+(sub?'<small>'+sub+'</small>':'')+'</span></button>';
+}
+function renderPanel(){
+  const p=$('#panel');
+  if(V.custom==='outfit'){p.innerHTML=outfitHTML();return;}
+  let h='';
+  if(S&&!V.bare)h+=statusLine();
+  if(V.kicker)h+='<p class="kicker">'+V.kicker+'</p>';
+  h+='<h2 class="ptitle">'+V.title+'</h2>';
+  (V.paras||[]).forEach(t=>{h+='<p class="narr">'+t+'</p>';});
+  if(V.effects&&V.effects.length)h+='<ul class="fx">'+V.effects.map(e=>'<li class="'+(e.good===undefined?'neutral':e.good?'good':'bad')+'">'+e.t+'</li>').join('')+'</ul>';
+  const maj=[],min=[];
+  V.choices.forEach((ch,i)=>{(ch.minor?min:maj).push(btn(ch,i));});
+  h+='<div class="choices">'+maj.join('')+'</div>';
+  if(min.length)h+='<div class="choices minors">'+min.join('')+'</div>';
+  p.innerHTML=h;
+}
+function meter(k,v,cls,bad){
+  const low=bad?v>70:v<25;
+  return '<div><div class="mh"><span>'+k+'</span><b>'+Math.round(v)+'</b></div><span class="bar '+(low?'low':cls)+'"><i style="width:'+clamp(v,0,100)+'%"></i></span></div>';
+}
+function num(k,v,warn){return '<div class="n'+(warn?' warn':'')+'"><span>'+k+'</span><b>'+v+'</b></div>';}
+function renderSide(){
+  const side=$('#side');
+  if(!S){side.hidden=true;$('#clock').textContent='';return;}
+  side.hidden=false;
+  $('#clock').textContent='Year '+(Math.floor(S.days/365)+1)+' · day '+(S.days%365+1);
+  const need=Math.ceil((S.crew+1)*RAT[S.rations].r);
+  $('#ledger').innerHTML='<div class="cols"><div class="col">'+
+    num('Men',S.alone?'alone':S.crew,!S.alone&&S.crew<8)+meter('Hull',S.hull,'sea')+num('Food',S.food,S.food<need*3)+
+    num('Wine',S.wine)+num('Pitch',S.pitch)+num('Talents',S.treasure)+'</div><div class="col">'+
+    meter('Morale',S.morale,'good')+meter('Vigor',S.vigor,'good')+meter('Poseidon’s wrath',S.wrath,'wine',true)+
+    num('Kleos (glory)',S.kleos)+num('To Ithaca',Math.max(0,END-Math.round(S.pos))+' lg')+'</div></div>';
+  $('#map').innerHTML=mapSVG();
+  const nl=LM[nextIdx()];
+  $('#mapnote').textContent='Next: '+nl.name+', '+Math.max(0,Math.round(nl.at-S.pos))+' leagues.';
+  $('#log').innerHTML=S.log.map(t=>'<li>'+t+'</li>').join('');
+}
+function mapSVG(){
+  const ni=nextIdx(),pts=[Object.assign({seen:true},START)];
+  LM.forEach((l,i)=>{const seen=S.seen.includes(i);if(seen||(i>=S.nextIdx&&(!l.cond||l.cond())))pts.push(Object.assign({seen,next:i===ni},l));});
+  const P=pts.map(p=>({x:p.x,y:Math.round(p.y*0.72),at:p.at,seen:p.seen,next:p.next,name:p.name}));
+  let sx=P[0].x,sy=P[0].y;
+  for(let i=0;i<P.length-1;i++){if(S.pos>=P[i].at&&S.pos<=P[i+1].at){const t=(S.pos-P[i].at)/(P[i+1].at-P[i].at);sx=P[i].x+(P[i+1].x-P[i].x)*t;sy=P[i].y+(P[i+1].y-P[i].y)*t;}}
+  const all=P.map(p=>p.x+','+p.y).join(' ');
+  const done=[];for(const p of P){if(p.at<=S.pos)done.push(p.x+','+p.y);}done.push(sx.toFixed(1)+','+sy.toFixed(1));
+  let s='<svg class="map" viewBox="0 0 360 135" role="img" aria-label="Chart of the voyage from Troy to Ithaca"><polyline class="course" points="'+all+'"/><polyline class="done" points="'+done.join(' ')+'"/>';
+  P.forEach((p,i)=>{s+='<circle class="pt'+(p.seen?' seen':'')+(p.next?' next':'')+'" cx="'+p.x+'" cy="'+p.y+'" r="'+(i===P.length-1?5:3.5)+'"/>';});
+  s+='<text x="'+(P[0].x-8)+'" y="'+(P[0].y+16)+'">Troy</text><text x="'+(P[P.length-1].x-4)+'" y="'+(P[P.length-1].y+16)+'">Ithaca</text>';
+  s+='<circle class="ship" cx="'+sx.toFixed(1)+'" cy="'+sy.toFixed(1)+'" r="5"/></svg>';
+  return s;
+}
+function outfitHTML(){
+  const o=ui.outfit,left=100-cost(o);
+  const row=(k,l,note,v)=>'<div class="orow"><div><b>'+l+'</b><span>'+note+'</span></div><div class="step"><button data-act="'+k+'-" aria-label="Less '+l+'">−</button><output>'+v+'</output><button data-act="'+k+'+" aria-label="More '+l+'">+</button></div></div>';
+  return '<p class="kicker">Troy, the beach</p><h2 class="ptitle">Outfit your ship</h2>'+
+   '<p class="narr">Ten years of siege are over and the holds hold 100 talents of spoils. Spend some on stores. Whatever you keep stays aboard as treasure, good for gifts, bribes and, in the end, glory.</p>'+
+   row('food','Food','measures of grain and dried fish',o.food)+row('wine','Wine','skins, for morale and for sacrifice',o.wine)+row('pitch','Pitch','pots, to repair the hull',o.pitch)+
+   '<p class="purse">Kept as treasure: <b>'+left+'</b> talents</p><div class="choices"><button class="choice primary" data-act="go"><span class="num">↵</span><span>Cast off</span></button></div>';
+}
+function outfitAct(a){
+  if(a==='go')return begin();
+  const D={food:[50,100,600],wine:[4,4,40],pitch:[10,10,80]},k=a.slice(0,-1),sg=a.slice(-1)==='+'?1:-1;
+  if(!D[k])return;
+  const nv=clamp(ui.outfit[k]+sg*D[k][0],D[k][1],D[k][2]),t=Object.assign({},ui.outfit);t[k]=nv;
+  if(cost(t)<=100)ui.outfit=t;
+  render();
+}
+function choose(i){const ch=V&&V.choices&&V.choices[i];if(!ch||ch.disabled)return;ch.run();scrollToPanel();}
+function scrollToPanel(){try{const r=$('#panel').getBoundingClientRect();if(r.top<0||r.top>window.innerHeight*0.6)window.scrollTo({top:window.scrollY+r.top-12});}catch(e){}}
+
+/* ---------- flow ---------- */
+function titleView(){
+  return {bare:true,kicker:'After Homer',title:'Bring your men home',paras:[
+   'Troy has fallen. The holds are heavy with spoils and Ithaca lies about 1,130 leagues to the west, past monsters, sorceresses and one very angry sea god.',
+   'Each turn you choose a pace and rations, then sail. Watch your food, wine, pitch and the mood of your crew. At every landfall you decide, and some choices follow you for years.'],
+   choices:[c('Outfit the ship',()=>{S=null;show({custom:'outfit',choices:[]});},{primary:true})]};
+}
+function begin(){
+  newGame(ui.outfit);
+  addLog('The black ships leave Troy.');
+  travelMenu(['The black ships slide off the sand and the oars bite water. Choose a pace and rations, then set sail.'],[]);
+}
+function travelMenu(rep,effs){
+  const nl=LM[nextIdx()],left=Math.max(0,Math.round(nl.at-S.pos));
+  const paras=rep&&rep.length?rep:['Open water. '+left+' leagues to '+nl.name+'.'];
+  const canRepair=S.pitch>=10&&S.hull<100,canSac=S.wine>=2&&S.food>=15;
+  show({travel:true,kicker:'At sea · '+left+' leagues to '+nl.name,title:S.alone?'Alone on the water':'The ship under way',paras,effects:effs||[],choices:[
+    c('Set sail',sail,{primary:true,hint:PACE[S.pace].n+' · '+RAT[S.rations].n}),
+    c('Pace: '+PACE[S.pace].n,()=>{S.pace=NP[S.pace];travelMenu(rep,effs);},{minor:true}),
+    c(RAT[S.rations].n,()=>{S.rations=NR[S.rations];travelMenu(rep,effs);},{minor:true}),
+    c('Put ashore to forage',forage,{minor:true,hint:'5 days'}),
+    c(S.alone?'Rest ashore':'Rest the crew',rest,{minor:true,hint:'5 days'}),
+    c('Repair the hull',repair,{minor:true,disabled:!canRepair,why:S.hull>=100?'Hull is sound':'Needs 10 pitch',hint:'10 pitch'}),
+    c('Sacrifice to Poseidon',sacrifice,{minor:true,disabled:!canSac,why:'Needs 2 wine, 15 food',hint:'2 wine, 15 food'})
+  ]});
+}
+function eat(){
+  S.turns++;
+  const need=Math.max(1,Math.ceil((S.crew+1)*RAT[S.rations].r));let e=[];
+  if(S.food>=need){
+    e=e.concat(fx({food:-need}));
+    if(S.rations==='full')e=e.concat(fx({morale:1,vigor:2}));
+    if(S.rations==='half')e=e.concat(fx({morale:-2}));
+    if(S.rations==='bare')e=e.concat(fx({morale:-5,vigor:-4}));
+  }else{
+    const had=S.food;e=e.concat(fx({food:-had,crew:-Math.min(S.crew,rand(1,3)),vigor:-10,morale:-8}));
+  }
+  if(S.turns%2===0){e=e.concat(S.wine>0?fx({wine:-1}):fx({morale:-1}));}
+  return e;
+}
+const SAIL=['Spray flies off the bow.','The rowers keep a steady beat.','The coast slides by to starboard.','A cold dawn, a hot noon, a sudden dusk.'];
+function sail(){
+  const P=PACE[S.pace],rep=[];let effs=[];
+  S.stale=0;
+  let d=P.l+rand(-8,10);
+  if(S.bag>0){d+=30;S.bag--;rep.push('The bag of winds swells every sail.');}
+  if(S.alone)d=Math.round(d*0.7);
+  d=Math.max(8,d);
+  const nl=LM[nextIdx()],from=S.pos;
+  S.pos=Math.min(nl.at,S.pos+d);S.days+=5;
+  const moved=Math.round(S.pos-from);
+  rep.push(pick(SAIL)+' You make '+moved+' leagues.');
+  effs=effs.concat(eat(),fx(P.fx));
+  let arrived=S.pos>=nl.at;
+  if(!arrived&&chance(0.6)){
+    const ev=rollEvent();
+    if(ev.view){const v=ev.view;v.paras=rep.concat(v.paras);v.effects=effs;v.kicker='At sea';show(v);return;}
+    rep.push.apply(rep,ev.paras);effs=effs.concat(ev.effs||[]);
+    arrived=S.pos>=nl.at;
+  }
+  afterTurn(rep,effs,arrived);
+}
+function afterTurn(rep,effs,arrived){
+  const notes=settle();
+  if(S.over)return endGame();
+  addLog(rep[rep.length-1]);
+  notes.forEach(addLog);
+  if(arrived){const i=nextIdx();S.nextIdx=i+1;S.seen.push(i);S.lastAt=LM[i].at;S.stale=0;addLog('Landfall at '+LM[i].name+'.');LM[i].scene();return;}
+  travelMenu(rep.concat(notes),effs);
+}
+function resume(){const n=settle();if(S.over)return endGame();travelMenu(n,[]);}
+function outcome(paras,effs,title,next){
+  addLog(paras[0].split('. ')[0].replace(/\.$/,'')+'.');
+  show({kicker:'Aftermath',title:title||'What came of it',paras,effects:effs||[],choices:[c('Continue',next||resume,{primary:true})]});
+}
+function forage(){
+  S.days+=5;let effs=eat();
+  const mult=Math.max(0.3,1-0.3*S.stale);S.stale++;
+  let gain=Math.round((rand(30,60)+Math.floor(S.crew*rand(1,2)))*mult),txt='Your people comb the shore and shallows for anything edible.';
+  if(chance(0.2)){const l=Math.min(S.crew,rand(1,2));effs=effs.concat(fx({crew:-l}));gain=Math.round(gain/2);txt='A boar in the scrub turns on the foragers. You lose '+l+(l>1?' men':' man')+' but get meat from it.';}
+  effs=effs.concat(fx({food:gain,vigor:3,morale:2}));
+  afterTurn([txt],effs,false);
+}
+function rest(){
+  S.days+=5;let effs=eat().concat(fx({morale:12,vigor:15}));
+  afterTurn(['You beach the ship and sleep in the shade. Cuts are dressed and tempers cool.'],effs,false);
+}
+function repair(){
+  S.days+=2;const e=fx({pitch:-10,hull:15});
+  afterTurn(['Planks are caulked and seams are sealed with hot pitch.'],e,false);
+}
+function sacrifice(){
+  S.days+=1;const e=fx({wine:-2,food:-15,wrath:-12,morale:3});
+  afterTurn(['You burn the thigh-bones and pour the wine into the sea for the Earth-Shaker.'],e,false);
+}
+
+/* ---------- sea events ---------- */
+const QUIET=['The oars rise and fall in time. The wine-dark sea keeps its own counsel.','Gulls follow the stern. Nothing happens, and the men are grateful for it.','A day of salt, sunburn and creaking oarlocks.','Dolphins ride the bow wave for an hour, then lose interest.'];
+function wpick(l){let t=0;l.forEach(e=>{t+=e.w;});let r=Math.random()*t;for(const e of l){r-=e.w;if(r<0)return e;}return l[l.length-1];}
+function rollEvent(){
+  const list=[
+   {w:20,f:()=>({paras:[pick(QUIET)],effs:[]})},
+   {w:8,f:evFair},{w:10+Math.round(S.wrath/5),f:evStorm},{w:5,f:evCalm},
+   {w:6,f:()=>({paras:['A school of tuna boils up around the hull and the men spear them by the dozen.'],effs:fx({food:rand(30,60),morale:3})})},
+   {w:5,f:evOmen},{w:S.crew>3?4:0,f:evFever},
+   {w:4,f:()=>({paras:['A seam opens in the planking. The bilge slops and the bailers get to work.'],effs:fx({hull:-rand(5,12)})})},
+   {w:6,f:evRaiders},{w:5,f:evHosts},
+   {w:3,f:()=>({paras:['A grey-eyed stranger on a headland nods once as you pass. The crew takes it as a blessing.'],effs:fx({wrath:-8,morale:6,vigor:5})})},
+   {w:S.wrath>=35?Math.round(S.wrath/6):0,f:evWave}
+  ].filter(e=>e.w>0);
+  return wpick(list).f();
+}
+function evFair(){
+  const lim=LM[nextIdx()].at,b=S.pos;S.pos=Math.min(lim,S.pos+25);
+  return {paras:['A fresh wind from the stern fills the sail. The rowers ship their oars and laugh.'],effs:fx({morale:3}).concat([{t:'+'+Math.round(S.pos-b)+' leagues',good:true}])};
+}
+function evStorm(){
+  const l=Math.min(S.crew,chance(0.4)?rand(1,3):0);
+  const e=fx({hull:-rand(8,18),food:-rand(4,14),morale:-5,crew:-l});
+  return {paras:['A black squall slams the ship. '+(l?l+(l>1?' men are':' man is')+' swept from the benches before a line reaches them.':'Everyone bails until dawn, and the ship holds.')],effs:e};
+}
+function evCalm(){
+  const cut=Math.min(rand(15,30),Math.max(0,Math.round(S.pos-S.lastAt)));S.pos-=cut;
+  const e=fx({food:-rand(3,8)});if(cut)e.push({t:'−'+cut+' leagues',good:false});
+  return {paras:['The wind dies. The sail hangs like washing and the current pushes you back the way you came.'],effs:e};
+}
+function evOmen(){
+  return chance(0.6)?{paras:['An eagle rises on your right with a snake in its talons. The men cheer.'],effs:fx({morale:8})}
+    :{paras:['A hawk tears a dove over the mast. Nobody says anything, and everybody thinks it.'],effs:fx({morale:-5})};
+}
+function evFever(){
+  const l=Math.min(S.crew,rand(1,3));
+  return {paras:['A fever moves down the benches. '+l+(l>1?' men do':' man does')+' not get up again.'],effs:fx({crew:-l,morale:-4})};
+}
+function evWave(){
+  const l=Math.min(S.crew,rand(1,4));
+  return {paras:['The sea heaves up into a wall of green water. The Earth-Shaker remembers you. When it passes, the rage in the water has eased a little.'],effs:fx({hull:-rand(15,28),crew:-l,wrath:-8,morale:-8})};
+}
+function evRaiders(){
+  return {view:{title:'Raiders on the water',paras:['A lean black ship comes out of a cove and turns toward you. Her crew are not waving.'],choices:[
+   c('Stand and fight',()=>{
+     if(chance(clamp(0.3+S.crew/100+S.morale/300,0.2,0.85)))outcome(['Your men hit them hard and fast. The raiders break and run, leaving their loot.'],fx({crew:-rand(0,2),treasure:rand(6,16),kleos:3,morale:5}),'A short, sharp fight');
+     else outcome(['They are better armed than they looked. You drive them off at a heavy price.'],fx({crew:-rand(2,5),treasure:-Math.min(S.treasure,rand(8,18)),hull:-rand(5,12),morale:-6}),'A short, sharp fight');}),
+   c('Row for open water',()=>{
+     if(chance(0.6))outcome(['You put your backs into it and leave them behind.'],fx({vigor:-3,hull:-2}),'The chase');
+     else outcome(['They run you down and take what they can reach before you shake them.'],fx({food:-rand(10,25),crew:-1,morale:-4}),'The chase');}),
+   c('Pay them to leave (10 talents)',()=>outcome(['A chest changes hands and the black ship drifts away without a word.'],fx({treasure:-10,morale:-2}),'A quiet bargain'),{disabled:S.treasure<10,why:'You do not have 10 talents'})
+  ]}};
+}
+function evHosts(){
+  return {view:{title:'Shepherds on a headland',paras:['Herdsmen wave you ashore. Zeus watches over strangers, and so do they, for a price.'],choices:[
+   c('Trade a gift (4 talents) for provisions',()=>outcome(['They bring cheese, barley and a lamb to the beach, and send you off with a blessing.'],fx({treasure:-4,food:rand(60,90),morale:4}),'Guest-friends'),{disabled:S.treasure<4,why:'You do not have 4 talents'}),
+   c('Wave and sail on',()=>outcome(['You keep your course. The shepherds shrug and go back to their flock.'],[],'Sailing on'))
+  ]}};
+}
+
+/* ---------- landmark scenes ---------- */
+function sceneIsmarus(){
+  show({kicker:'Ismarus',title:'A rich city, lightly guarded',paras:['Your first landfall after Troy is the town of the Cicones. Granaries, flocks, wine-jars stacked in cool cellars. The walls are low, and your men are still hungry for plunder.'],choices:[
+   c('Sack the city',()=>{
+     const l=Math.min(S.crew,rand(6,11));
+     outcome(['The raid goes well until dawn. You order your men to flee, but they feast on the beach instead, and the Cicones come down from the hills by the hundreds.'],fx({treasure:rand(25,40),food:rand(80,120),wine:8,crew:-l,kleos:10,morale:-4}),'Plunder and its price');}),
+   c('Trade for supplies (5 talents)',()=>outcome(['The Cicones sell you grain and wine at a fair price and watch you leave with relief.'],fx({treasure:-5,food:50,wine:4}),'Fair dealing'),{disabled:S.treasure<5,why:'You do not have 5 talents'}),
+   c('Sail on',()=>outcome(['You do not tempt fate. The city sleeps behind you.'],[],'Sailing on'))
+  ]});
+}
+function sceneLotus(){
+  S.days+=9;
+  show({kicker:'The Lotus-Eaters',title:'Nine days of storm, then sweet fruit',paras:['A gale off Cape Malea drives you nine days across strange water. You land among gentle people who offer a honey-sweet flower. Three scouts eat it and do not want to go home.'],choices:[
+   c('Drag them back and bind them to the benches',()=>outcome(['They weep and curse the whole afternoon, then sleep. By morning they remember Ithaca again.'],fx({morale:-6,vigor:-3}),'Forced to remember'),{hint:'Everyone lives'}),
+   c('Leave them behind',()=>{const l=Math.min(S.crew,3);outcome(['You sail at dusk. They wave from the sand, smiling.'],fx({crew:-l,morale:-8}),'Left behind');}),
+   c('Taste the lotus yourself',()=>{S.days+=30;outcome(['It is the best thing you have ever eaten. Weeks pass. When you finally leave, the holds are lighter and your name matters a little less.'],fx({food:-80,vigor:10,morale:30,kleos:-10}),'The flower');})
+  ]});
+}
+function sceneCyclops(){
+  show({kicker:'Island of the Cyclopes',title:'A cave full of cheeses',paras:['A tall cave above the shore, racks of cheese, pens of lambs. Whoever lives here is large and not at home.'],choices:[
+   c('Explore the cave with twelve men',cyclopsCave),
+   c('Take goats from the shore and sail on',()=>outcome(['Wild goats are easy meat. You are gone before anyone big comes down the hill.'],fx({food:rand(50,80),morale:3}),'A quiet raid'))
+  ]});
+}
+function cyclopsCave(){
+  const e=fx({crew:-2});
+  show({kicker:'Island of the Cyclopes',title:'The stone at the door',paras:['Polyphemus comes home at dusk, rolls a boulder across the mouth of the cave and, without a word, eats two of your men. Your swords are useless against this hide, and you cannot move that stone.'],effects:e,choices:[
+   c('Offer him Maron’s strong wine',cyclopsWine,{disabled:S.wine<2,why:'You need 2 skins of wine'}),
+   c('Fight him in the dark',()=>{const l=Math.min(S.crew,rand(6,9));outcome(['Blades are straws against his hide. Only the dawn flock lets you slip out between its legs.'],fx({crew:-l,vigor:-15,wrath:10,morale:-10}),'A bad idea');}),
+   c('Beg for hospitality in Zeus’s name',()=>{const l=Math.min(S.crew,rand(3,5));outcome(['He laughs. The Cyclopes care nothing for Zeus. You escape only when he sleeps.'],fx({crew:-l,morale:-8,wrath:5}),'No guest-friend here');})
+  ]});
+}
+function cyclopsWine(){
+  const e=fx({wine:-2,crew:-Math.min(S.crew,2),food:120,kleos:6});
+  show({kicker:'Island of the Cyclopes',title:'Nobody’s revenge',paras:['He drinks three bowls and asks your name. “Nobody,” you tell him. When he sleeps, you and your men burn the point of an olive stake and drive it into his single eye. His brothers hear him roar “Nobody is hurting me” and go back to bed.','Strapped under his rams, you ride out past his groping hands, with sheep for the ship. As you row away, the old temper rises.'],effects:e,choices:[
+   c('Shout your true name from the water',()=>outcome(['“Odysseus, sacker of cities!” He hurls half a hilltop at the sound and then prays to his father Poseidon. The prayer is heard.'],fx({kleos:15,wrath:40,morale:6}),'A name too loud'),{hint:'Glory, and a god’s anger'}),
+   c('Row away quietly',()=>outcome(['Your men thank you. Poseidon hears the giant’s prayer anyway, but faintly.'],fx({wrath:10}),'Quiet water'))
+  ]});
+}
+function sceneAeolia(){
+  S.days+=30;
+  const feast=()=>fx({food:60,morale:8});
+  show({kicker:'Aeolia',title:'The keeper of the winds',paras:['Aeolus lives on a floating island ringed with bronze. He feasts you for a month, then ties every unfavorable wind into a leather bag and gives it to you. Only the west wind is left free to blow you home.'],choices:[
+   c('Take the bag and guard it yourself',()=>{S.bag=4;outcome(['You hold the bag for nine sleepless days. The west wind does the rest.'],feast().concat(fx({vigor:-8})),'The bag of winds');},{hint:'Costs you sleep'}),
+   c('Take the bag and trust your men',()=>{
+     if(chance(0.5))outcome(['You sleep. The crew, sure it is full of gold, open the bag. Every wind in the world gets out.'],feast().concat(fx({hull:-15,wrath:5,morale:-10})),'The bag opens');
+     else{S.bag=4;outcome(['You sleep, and for once nothing goes wrong. The wind holds.'],feast(),'The bag of winds');}}),
+   c('Accept the feast, leave the bag',()=>outcome(['You thank the keeper of the winds and take only his hospitality.'],feast(),'Feasting'))
+  ]});
+}
+function sceneLaest(){
+  show({kicker:'The Laestrygonians',title:'A harbor ringed with cliffs',paras:['A perfect round harbor with a narrow mouth. A girl at the well tells you the king’s house is near. Something tall moves on the cliff tops.'],choices:[
+   c('Row inside the sheltered harbor',()=>{const l=Math.min(S.crew,rand(10,16));outcome(['Giants line the cliffs and throw boulders into the water. They spear the men like fish. You cut your cable and row for the mouth.'],fx({crew:-l,hull:-25,morale:-15}),'The giants’ harbor');}),
+   c('Tie up outside the cliffs and send scouts',()=>{
+     if(chance(0.5))outcome(['The scouts come back with sheep, and the news that the locals are not friendly.'],fx({food:70,morale:3}),'Scouts return');
+     else{const l=Math.min(S.crew,rand(2,3));outcome(['Two scouts are seized and eaten. The rest flee down the cliffs.'],fx({crew:-l,morale:-6}),'Scouts lost');}}),
+   c('Row past without landing',()=>outcome(['You do not like the look of those cliffs. A few hard hours, and the island is a gray smudge.'],fx({vigor:-3}),'Wise caution'))
+  ]});
+}
+
+function sceneCirce(){
+  const stay=()=>{S.circe=true;S.days+=365;};
+  show({kicker:'Aeaea',title:'The house in the oak wood',paras:['Smoke rises from a stone house among tame lions and wolves. A scouting party you sent ahead has not come back. Circe, the sorceress who lives here, turns visitors into swine.'],choices:[
+   c('Go yourself with the herb Hermes gave you',()=>{stay();outcome(['Hermes met you on the path with a root called moly. Circe’s cup cannot touch you. She restores every man she had changed, and keeps you all a year, feasting.','Before you leave she tells you the way onward: to the edge of the world, to speak with the dead.'],fx({morale:30,vigor:100,food:150,wine:10,pitch:10,kleos:5}),'The sorceress');}),
+   c('Send a scouting party in first',()=>{stay();const l=Math.min(S.crew,rand(4,6));outcome(['They come back as pigs. You go in yourself afterward with Hermes’ herb and make Circe undo it, but not before some of them have gone missing in the pens. She keeps you a year and gives you directions.'],fx({crew:-l,morale:20,vigor:100,food:120,wine:8,pitch:10}),'The sorceress');}),
+   c('Sail past at once',()=>outcome(['Nothing about that house looks safe. You leave the smoke behind and never learn what it was for.'],fx({morale:-5}),'Wise or foolish?'))
+  ]});
+}
+function sceneHades(){
+  show({kicker:'The edge of the world',title:'Blood in a trench',paras:['At the ends of the earth you dig a trench and pour wine, honey and a black ram’s blood into it. The dead come crowding up from the dark. You can speak with only one before the rest crush in.'],choices:[
+   c('Call up the prophet Tiresias',()=>{S.warned=true;outcome(['“Leave the cattle of Helios untouched,” he says, “and you will see Ithaca. Eat them and you will come home late, alone, on a stranger’s ship.”'],fx({wine:-3,kleos:5,morale:-6}),'The prophecy');},{disabled:S.wine<3,why:'You need 3 wine'}),
+   c('Speak with the ghost of Achilles',()=>outcome(['“I would rather be a hired hand on earth,” he says, “than king of all the dead.” You think about that for a long time.'],fx({morale:-8,kleos:8,vigor:8}),'Achilles’ shade')),
+   c('Bury Elpenor and go',()=>outcome(['The young man who fell drunk from Circe’s roof asks for a burial. You give him a cairn and an oar for a marker.'],fx({kleos:3,morale:4}),'A debt paid'))
+  ]});
+}
+function sceneSirens(){
+  show({kicker:'The Sirens',title:'A song across the water',paras:['Circe’s warning rings in your head. Ahead is a meadow of bones and two women singing the name of every man who ever won glory. Anyone who listens will steer for the rocks.'],choices:[
+   c('Wax in your crew’s ears, and lash yourself to the mast',()=>outcome(['You hear all of it. You scream to be released and your men row harder. When the song is behind you, the rope comes off and you cannot speak.'],fx({pitch:-5,kleos:10,morale:4}),'The song'),{disabled:S.pitch<5,why:'Needs 5 pitch for wax'}),
+   c('Wax in every ear, yours too',()=>outcome(['A silent crossing. You watch their mouths move and learn nothing.'],fx({pitch:-3}),'The silent passage'),{disabled:S.pitch<3,why:'Needs 3 pitch for wax'}),
+   c('Let everyone listen',()=>{const l=Math.min(S.crew,rand(6,12));outcome(['Half the men dive overboard for a song they cannot reach. The rest row you onto the reef.'],fx({crew:-l,vigor:-8,morale:-10}),'The song');})
+  ]});
+}
+function sceneStrait(){
+  show({kicker:'The Narrow Strait',title:'Rock on one side, whirlpool on the other',paras:['A cliff with six-headed Scylla in its cave on one side. On the other, Charybdis, who drinks the sea three times a day and spits it out again.'],choices:[
+   c('Hug Scylla’s cliff',()=>{const l=Math.min(S.crew,6);outcome(['Six heads dart down and each takes a man from the benches. It is quick, and the ship passes intact.'],fx({crew:-l,morale:-8}),'Scylla’s toll');},{hint:'A sure price'}),
+   c('Steer through Charybdis',()=>{
+     if(chance(0.5))outcome(['The ship rides the lip of the whirlpool and scrapes through on the outgoing surge.'],fx({hull:-8,kleos:5}),'Charybdis');
+     else outcome(['The sea drops away. You lose hull planks and men, and come out spinning.'],fx({hull:-45,crew:-Math.min(S.crew,rand(3,7)),morale:-10}),'Charybdis');},{hint:'A gamble'}),
+   c('Arm yourself and fight Scylla',()=>{const l=Math.min(S.crew,8);outcome(['Circe warned you that she is not a thing to be fought. You find out why.'],fx({crew:-l,vigor:-12,morale:-6}),'Foolish courage');})
+  ]});
+}
+function wreck(){
+  const lost=S.crew;S.crew=0;S.alone=true;S.hull=30;S.food=5;S.wine=0;S.pitch=0;S.treasure=Math.round(S.treasure*0.2);S.morale=20;S.vigor=Math.max(25,S.vigor-30);
+  addLog('Zeus wrecks the ship. You are alone.');
+  show({kicker:'Thrinacia',title:'Zeus’s thunderbolt',paras:['Six days of feasting on the sacred cattle of Helios, and on the seventh the wind turns fair. You get ten leagues out. Then comes the thunderbolt.','You wake clinging to the keel with the mast. Not one man answers when you call.'],
+   effects:[{t:'−'+lost+' men',good:false},{t:'ship lost',good:false},{t:'stores lost',good:false}],choices:[c('Continue',resume,{primary:true})]});
+}
+function sceneThrin(){
+  const hold=()=>{S.days+=30;outcome(['A month of contrary wind. The men fish and fowl, and you keep them honest with sleepless watches. Then the wind swings south at last, and the cattle stay where they are.'],fx({food:-Math.min(S.food,rand(60,90)),morale:-8,kleos:8,vigor:-4}),'The oath holds');};
+  show({kicker:'Thrinacia',title:'The cattle of the sun',paras:['A green island, and on it the sacred cattle of Helios. The wind will not turn. Your men are tired and hungry and the herd is right there.',S.warned?'Tiresias told you what happens next if they touch it.':'Nothing warned you what happens next if they touch it.'],choices:[
+   c('Forbid the cattle, live off fish and fowl',()=>{if(S.food>=80||(S.warned&&S.morale>=40))hold();else wreck();},{hint:'Holds only if food and morale allow'}),
+   c('Swear the men to an oath (3 wine, 10 talents)',()=>{fx({wine:-3,treasure:-10});if(S.food>=40||chance(0.7))hold();else wreck();},{disabled:S.wine<3||S.treasure<10,why:'Needs 3 wine and 10 talents'}),
+   c('Slaughter the cattle and sacrifice properly',wreck)
+  ]});
+}
+function sceneOgygia(){
+  show({kicker:'Ogygia',title:'The nymph’s island',paras:['The sea throws you onto a beach of white sand. Calypso, a goddess, takes you in and loves you. She offers a bed, a cave and never growing old. You stand every day on the shore and look west.'],choices:[
+   c('Refuse immortality and ask for a raft',()=>{S.days+=7*365;S.hull=70;outcome(['Seven years pass. At last Hermes comes with Zeus’s order. Calypso gives you tools, a cloak and a wind. You build a raft in four days.'],fx({vigor:100,food:90,wine:6,pitch:30,morale:30}),'Seven years');}),
+   c('Accept Calypso’s offer',()=>{S.over='calypso';endGame();})
+  ]});
+}
+function sceneScheria(){
+  const stone=S.wrath>=70;
+  const gifts=(t,fd,hl)=>{const e=fx({treasure:t,food:fd,vigor:20,morale:20});if(S.alone){S.hull=stone?50:100;}else if(!stone){e.push.apply(e,fx({hull:hl}));}return e;};
+  const note=stone?' But Poseidon is not done with you. He turns the Phaeacian ferry to stone on its way home, and you sail on in a plain boat.':' They give you a ship and a crew to take you the rest of the way.';
+  show({kicker:'Scheria',title:'The land of the Phaeacians',paras:[S.alone?'Poseidon smashes your raft in sight of the shore. A sea goddess lends you her veil, and you swim two days and wake on a beach in a heap of leaves.':'You land on a green island of fair harbors.','The princess Nausicaa finds you and sends you to her father’s hall. The king feasts you and asks who you are.'],choices:[
+   c('Tell them who you are, and tell the story',()=>outcome(['You tell it all, and the hall goes quiet. The Phaeacians fill your hold with gifts.'+note],gifts(rand(70,100),120,30).concat(fx({kleos:10})),'The telling')),
+   c('Accept their hospitality without a name',()=>outcome(['They ask no more questions. The gifts are modest, and the road is open.'+note],gifts(rand(30,50),60,10),'A quiet guest'))
+  ]});
+}
+function sceneIthaca(){
+  show({kicker:'Ithaca',title:'The island at last',paras:['Dawn shows a green hump of land and a harbor you know in your sleep. Athena meets you on the shore and tells you the truth: a hundred suitors in your hall, eating your herds and courting your wife Penelope.',S.alone?'You have no crew at your back. You have your bow, your name and the goddess.':'Your '+S.crew+' surviving men fall in on the sand behind you.'],choices:[
+   c('Walk up to the hall and announce yourself',()=>ithacaFinal(false)),
+   c('Let Athena make you a beggar and go in unrecognized',()=>ithacaFinal(true))
+  ]});
+}
+function ithacaFinal(disguised){
+  const p=clamp(0.25+Math.min(S.crew*0.006,0.25)+Math.min(S.treasure/1000,0.1)+Math.min(S.kleos/400,0.08)+S.vigor/500+S.morale/1000+(disguised?0.2:0),0.1,0.95);
+  S.over=chance(p)?'win':'lose';S.how=disguised;endGame();
+}
+function endGame(){
+  const k=S.over,years=Math.floor(S.days/365)+1,win=k==='win';
+  const score=(win?500:0)+S.crew*25+S.treasure*2+S.kleos*4+S.vigor+Math.max(0,10-years)*20;
+  const T={
+   win:['Home at last',S.how?['You come in as a beggar, and no one in the hall gives you a second look. When Penelope sets the contest of the great bow, you string it with one hand.','By evening the hall is quiet and the hearth is lit. After '+years+' years, you are home.']:['You walk up the path with your name in your mouth. The suitors laugh until the first arrow lands. By evening the hall is quiet and your house is yours again.','After '+years+' years, you are home.']],
+   lose:['The hall is lost',['The suitors are too many and you are too tired. They overwhelm you in the doorway. Penelope hears the noise and does not know who it was.']],
+   vigor:['Odysseus is no more',['You have given the sea everything you had. Somewhere past the horizon, Ithaca goes on without you.']],
+   raft:['The sea keeps you',['The planks come apart. Poseidon has waited a long time for this.']],
+   calypso:['A god’s long evening',['You live forever on a sunlit island with someone who loves you. You never see Ithaca again and you never grow old. Some of that is the point.']]
+  }[k];
+  addLog(T[0]+'.');
+  show({bare:true,kicker:'The end',title:T[0],paras:T[1],effects:[{t:'Score '+score},{t:'Year '+years},{t:S.crew+' men home'},{t:S.kleos+' kleos'}],choices:[c('Sail again',()=>{S=null;show(titleView());},{primary:true})]});
+}
+
+/* ---------- boot ---------- */
+$('#panel').addEventListener('click',e=>{
+  const b=e.target.closest('button');if(!b)return;
+  if(b.dataset.act)outfitAct(b.dataset.act);else if(b.dataset.i!==undefined)choose(+b.dataset.i);
+});
+document.addEventListener('keydown',e=>{
+  if(e.ctrlKey||e.metaKey||e.altKey)return;
+  const n=parseInt(e.key,10);if(n>=1&&n<=9)choose(n-1);
+});
+if(typeof globalThis!=='undefined'&&globalThis.__ODY_TEST){globalThis.__ODY_HOOK={begin,choose,get V(){return V;},get S(){return S;}};}
+show(titleView());
+})();
+</script>
